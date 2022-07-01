@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Aaron Escobar - Web Developer in Miami</title>
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <!--<script src="/experiments/three.js/build/three.js"></script>
+        <script src="/experiments/three.js/examples/js/loaders/GLTFLoader.js"></script>-->
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@200;400;700&display=swap');
+
+            * {font-family:'IBM Plex Mono', monospace;}
+
+            body {
+                background: #e8b9a3;
+                color: #000;
+                margin:0; 
+                padding:0;
+            }
+
+            main {
+                margin:100px;
+            }
+
+            h1 {
+                /*letter-spacing: 0.5em;*/
+                text-transform: uppercase;
+                position: relative;
+                width: fit-content;
+                color: #aa6744;
+            }
+
+            h1::after {
+                content: "";
+                display: block;
+                position: absolute;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background-color: #aa6744;
+            }    
+
+            h1::after {
+                width: 2em;
+            }
+
+            #bg-canvas {
+                position:absolute;left:0;top:0;bottom:0;right:0;
+            }
+
+            @keyframes blinkerBlink {
+                from {opacity: 1;}
+                to {opacity: 0;}
+            }
+
+            .blinker::after {
+                content: "_";
+                animation: blinkerBlink 0.5s;
+                animation-iteration-count: infinite;
+            } 
+
+            #gradient-overlay {
+                background: linear-gradient(135deg, rgba(255,255,255,1) 12.5%, rgba(218,218,218,1) 12.5%, rgba(218,218,218,1) 25%, rgba(182,182,182,1) 25%, rgba(182,182,182,1) 37.5%, rgba(145,145,145,1) 37.5%, rgba(145,145,145,1) 50%, rgba(109,109,109,1) 50%, rgba(109,109,109,1) 62.5%, rgba(72,72,72,1) 62.5%, rgba(72,72,72,1) 75%, rgba(36,36,36,1) 75%, rgba(36,36,36,1) 87.5%, rgba(0,0,0,1) 87.5%);
+                width:100%;
+                height:100%;
+                position: absolute;
+                top:0;left:0;
+                mix-blend-mode: soft-light;
+                z-index: -1;
+            }
+
+            #scene-canvas {
+                z-index:1;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="gradient-overlay"></div>
+        <div style="position:absolute; top:0;left:0; pointer-events: none;">
+            <main id="mainBody">
+                <span style="font-size:64pt; font-weight: 100;">aaron escobar</span>
+                <span style="color:#fff;font-size:24pt;text-shadow:#da9e81 0px 4px">web developer<span class="blinker"></span></span>
+
+                <div style="height:20px;"></div>
+
+                <h1>I'll worry about the code so you don't have to...</h1>
+                <p>This site is being built right now so please don't mind the mess.</p>
+
+                <svg id="svgelem" height="200" xmlns="http://www.w3.org/2000/svg">
+                    <circle id="bluecircle" cx="60" cy="60" r="50" fill="#487473" />
+                    <line x1="0" y1="80" x2="100" y2="20" stroke="black" />
+                </svg>
+            </main>   
+        </div> 
+
+        <!--<script>
+            function loadJS(url){
+                var head = document.getElementsByTagName('HEAD')[0]; 
+                var script = document.createElement('SCRIPT');
+
+                // set the attributes for script element 
+                script.src = url + '?no-cache=' + Math.random(); 
+
+                // Append script element to HTML head
+                head.appendChild(script); 
+            }
+            loadJS('site/js/bundle.js');
+        </script>-->
+        <script type="module" src="bundle.js"></script>
+    </body>
+</html>
