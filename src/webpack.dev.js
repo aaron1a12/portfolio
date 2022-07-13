@@ -5,8 +5,11 @@ const path = require('path');
 module.exports = merge(common, {
     mode: 'development',
     devtool: 'eval-source-map',
-    watch: true,
+    //watch: true,
     devServer: {
+        compress:true,
+        liveReload:true,
+        watchFiles: ["src/*.html"],
         static: {
             directory: path.join(__dirname, '../www'),
         },

@@ -1,0 +1,60 @@
+/*!
+ * Bootstrap v5.1.3 (https://getbootstrap.com/)
+ * Copyright 2011-2021 The Bootstrap Authors
+ * Copyright 2011-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+ */
+ 
+$breakpoints: (
+    sm: 540px,
+    md: 720px,
+    lg: 960px,
+    xl: 1140px,
+    xxl: 1320px
+) !default;
+
+@function breakpoint-min($name, $breakpoints: $grid-breakpoints)
+{
+    $min: map-get($breakpoints, $name);
+    @return if($min != 0, $min, null);
+}
+
+@function breakpoint-max($name, $breakpoints: $grid-breakpoints)
+{
+    $max: map-get($breakpoints, $name);
+    @return if($max and $max > 0, $max - .02, null);
+}
+
+@mixin break-down($name)
+{
+    $max: breakpoint-max($name, $breakpoints);
+
+    @if $max
+    {
+      @media (max-width: $max)
+      {
+        @content;
+      }
+    }
+    @else
+    {
+      @content;
+    }
+}
+
+@mixin break-up($name)
+{
+    $min: breakpoint-min($name, $breakpoints);
+
+    @if $min
+    {
+      @media (min-width: $min)
+      {
+        @content;
+      }
+    }
+    @else
+    {
+      @content;
+    }
+}
