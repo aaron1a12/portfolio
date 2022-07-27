@@ -1,3 +1,5 @@
+import "./utils";
+
 import * as THREE from 'three';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
@@ -6,6 +8,7 @@ import { Actor } from './actor';
 import { Player } from "./player";
 import { NPC } from './npc';
 
+import { util } from 'webpack';
 
 class Game
 {
@@ -111,6 +114,8 @@ class Game
      */ 
     public run()
     {
+        //utils.foobar();
+        //utils.ladeeda;
         ////////////////////////////////////////////////////////////////////////////////
         // Add the three.js renderer to the DOM
         ////////////////////////////////////////////////////////////////////////////////
@@ -135,10 +140,10 @@ class Game
 
         if (!this.scene) return;
 
-        const size = 10;
-        const divisions = 10;
+        const size = 100;
+        const divisions = 100;
         const gridHelper = new THREE.GridHelper( size, divisions,  0x000000, 0x54281d);
-        //this.scene.add( gridHelper );
+        this.scene.add( gridHelper );
 
         // Ground
         const groundGeo = new THREE.PlaneGeometry( 100, 100 );
@@ -211,7 +216,8 @@ class Game
         // Add the player
         ////////////////////////////////////////////////////////////////////////////////
 
-        game.player = new Player();        
+        game.player = new Player();    
+        
         new NPC();  
 
         ////////////////////////////////////////////////////////////////////////////////
@@ -274,24 +280,40 @@ class Game
     }
 
     /**
-     * Puts the actor in an array and keeps track of its loading promise.
+     * Puts the actor in an array and keeps track of its main loading promise.
      */  
     public registerActor(actorRef: Actor)
     {
-        this.actors.push(actorRef);
-        this.loadingPromises.push(actorRef.tryLoad);
-
         if (this.bGameIsStarted)
         {
             actorRef.tryLoad.then(() => {
-                actorRef.onStart();                   
+
+                // Push to actor list which serves as an update queue.
+                // So this actor will tick on the next update.
+                this.actors.push(actorRef);
+
+                actorRef.onStart();
             });
         }
         else
         {
+            this.actors.push(actorRef);
+            this.loadingPromises.push(actorRef.tryLoad);
+
             window.addEventListener("gamestart", actorRef.onStart.bind(actorRef), false); 
         }
     }
+
+    /**
+     * Add to the list of stuff that needs to load before the game starts.
+     */  
+    public registerLoadingPromises(promiseArray: Promise<void>[])
+    {
+        for(var i=0; i<promiseArray.length; i++)
+        {
+            this.loadingPromises.push(promiseArray[i]);
+        }
+    }    
   
     /**
      * Starts the game by waiting for all actors to load and then broadcasts
@@ -300,7 +322,6 @@ class Game
     public start()
     {
         if (this.bGameIsStarted) return;
-        this.bGameIsStarted = true;
         
         let me:Game = this;
         let total = game.loadingPromises.length;
@@ -344,30 +365,52 @@ class Game
         Promise.all(game.loadingPromises).then(() => {
             me.bGameIsStarted = true;
 
+            // Game logic begins here.
+            this.onStart();
+
+            // Notify every actor.
             window.dispatchEvent(this.gameStartEvent);
 
-            console.log("The game has started.");
-            me.gameLoop(0);
-
-            const homePane = document.getElementById("home-pane");
-
-            if (homePane)
-            {
-                setTimeout(()=>{
-                    homePane.style.transform = "scale(1)"
-                }, 1000);
-            }
-
-            this.renderer?.domElement.classList.add("opaque");
+            // Start the loop.            
+            me.gameLoop(0);            
         });
     }
-    
+
+    /**
+     * Run when the game starts, right before every loaded actor.
+     */
+    private onStart()
+    {
+        console.log("The game has started.");
+
+        const homePane = document.getElementById("home-pane");
+
+        if (homePane)
+        {
+            setTimeout(()=>{
+                homePane.style.transform = "scale(1)"
+            }, 1000);
+        }
+
+
+        const tutorials = document.querySelector(".tutorials") as HTMLElement;
+
+        if (tutorials)
+        {
+            tutorials.style.display = "block";
+        }
+
+        this.renderer?.domElement.classList.add("opaque");
+    }
+
+
     /**
      * Starts or continues the game loop. Also ticks or updates all actors.
      */
-    public gameLoop(time: number)
+    private gameLoop(time: number)
     {
-        if (!this.lastTime) {
+        if (!this.lastTime)
+        {
             this.lastTime = time;
         }
         else

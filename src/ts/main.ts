@@ -7,6 +7,7 @@
 import '../scss/style.scss';
 import {game} from "./game"; // It's a singleton - bite me
 
+
 const dev = document.documentElement.classList.contains("dev");
 const buildHash = document.documentElement.getAttribute("data-build-hash");
 
@@ -92,7 +93,8 @@ liveType("aaron escobar", document.getElementById("dev-name"), 0.1).then(()=>
 
 const hamburgerBtn = document.getElementById("hamburger");
 
-hamburgerBtn?.addEventListener("click", (e)=>{
+hamburgerBtn?.addEventListener("mousedown", (e)=>{
+    console.log("wtf");
     const links = document.getElementById("main-nav-links");
     const nav = document.getElementById("main-nav");
 

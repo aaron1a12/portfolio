@@ -1,0 +1,11 @@
+{
+	"mascot_walk": {
+		"version": 1,
+		"id": "mascot_walk",
+		"name": "1",
+		"kind": "Puppeteer",
+		"mood": null,
+		"postPlaybackMood": null,
+		"duration": 1
+	}
+}

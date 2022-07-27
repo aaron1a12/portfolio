@@ -228,7 +228,7 @@ nav {
             color: #fff;
             display: block;
             margin:30px;
-            padding-left: 60px;
+            padding-left: 20px;
         }
 
         li {
@@ -238,7 +238,7 @@ nav {
         }
 
         &.opened ul{
-            transform: translateX(200px);  
+            transform: translateX(180px);  
         }
 
     }
@@ -326,7 +326,8 @@ h1::after {
     top: 4px;
     left: 4px;
     z-index: 999;
-    display: none;
+    display: block;
+    pointer-events: none;
 }
 
 
@@ -378,9 +379,65 @@ article {
     position: fixed;
     background-color: rgba(0,0,0,0.65);
     color: #fff;
-    top: 35%;
+    
     padding: 20px;
     border-radius: 10px;
     transform: scale(0);
     transition: transform 0.4s ease-in-out;
+
+    top: 25%;
+    width:80%;
+
+    @include break-up(lg) {
+        width: 400px;
+    }
 }
+
+.touch-controls {
+    height: 100%;
+    display: flex;
+    position: fixed;
+    width: 100%;
+    top: 0;
+
+    .touch {
+        width: 100%;
+    }
+}
+
+@keyframes arrowMove {
+    0% {opacity: 0; transform: translate(-20px);}
+    50% {opacity: 1;}
+    100% {opacity: 0;}
+}
+
+
+.tutorials {
+    color: #ffffffaa;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: none;
+
+
+    .arrow {
+        pointer-events: none;
+        position: fixed;
+        right:0;
+        top:0;
+        bottom:0;
+        font-size: calc(10vh + 10vw);
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+
+        span {
+            animation: arrowMove 1.0s;
+            animation-iteration-count: infinite;
+            animation-timing-function: cubic-bezier(1, -1.23, 0.5, 1.80);
+        }
+    }
+}
+
+

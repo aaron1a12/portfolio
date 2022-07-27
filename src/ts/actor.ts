@@ -20,10 +20,10 @@ export class Actor
 
     /**
      * Default constructor automatically registers the actor.
-     */      
+     */
     constructor()
     {
-        game.registerActor(this);        
+        game.registerActor(this);
     }
 
     /**

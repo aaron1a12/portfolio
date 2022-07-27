@@ -13,9 +13,13 @@ export class NPC extends Actor
 
     onLoad(onSuccess: () => void, onFailure: () => void)
     {
+
+        game.player?.tryLoad.then(()=>{
+            onSuccess();
+        });
         setTimeout(()=>{
             console.log("NPC loaded.");
-            onSuccess();
+            //onSuccess();
         }, 1);
 
     }

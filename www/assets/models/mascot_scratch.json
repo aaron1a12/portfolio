@@ -1,0 +1,11 @@
+{
+	"mascot_scratch": {
+		"version": 1,
+		"id": "mascot_scratch",
+		"name": "1",
+		"kind": "Puppeteer",
+		"mood": null,
+		"postPlaybackMood": null,
+		"duration": 2
+	}
+}
