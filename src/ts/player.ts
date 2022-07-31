@@ -27,27 +27,57 @@ enum Bones {
     eye_r = 26,
 }
 
-enum StateMachineStates {
-    idle = 1,
-    head = 8,
-    antenna_a = 17,
-    antenna_b,
-    antenna_c,
-    antenna_d,
-    antenna_end,
-    eyes = 24,
-    eye_l = 25,
-    eye_r = 26,
+enum Actions {
+    Idle,
+    Walk,
 }
 
 function easeInOutSine(x: number): number {
     return -(Math.cos(Math.PI * x) - 1) / 2;
 }
 
+interface PlayerAction {
+    id: number;
+    action: null | THREE.AnimationAction;
+    targetWeight: number;
+}
+
+interface PlayerActions {
+    idle: PlayerAction;
+    walk: PlayerAction;
+}
+
 export class Player extends Actor {
     constructor()
     {
         super();
+
+        this.playerActions = {
+            idle: {id:0, action: null, targetWeight:0},
+            walk: {id:0, action: null, targetWeight:0},
+        }
+    }
+
+    private playerActions:PlayerActions = {} as PlayerActions;
+    private actionArray: any = [];
+
+    private currentFadeTime = 10;
+
+    private playAction(action: PlayerAction, fadeTime: number)
+    {
+        for (let i=0; i < this.actionArray.length; i++)
+	    {
+		    let currentAction = this.actionArray[i] as PlayerAction;
+
+            
+
+            if (currentAction.id !== action.id)
+                currentAction.targetWeight = 0.0;
+            else
+                currentAction.targetWeight = 1.0;
+	    }
+
+        this.currentFadeTime = fadeTime;
     }
 
     private model = null as null | THREE.Group;
@@ -74,23 +104,65 @@ export class Player extends Actor {
     private idleAnim =  null as null | THREE.AnimationClip;
     private walkAnim =  null as null | THREE.AnimationClip;
 
+
+
+
+    
+    private refPose:any = []
+
+    //private actions:any = []
+    private actionTargets:any = []
+
+    private applyRefPose()
+    {
+        if (!this.model) return;
+
+        let me = this;
+
+        for (let i=0; i < 10; i++)
+        {
+            let currentId = this.refPose[i][0] as number;
+
+            this.model.traverse(function (child) {
+                if (child.id == currentId) {
+                    console.log("Found it");
+                    let model = me.model as THREE.Group;
+                    
+                    child.position.x = me.refPose[i][1];
+                    child.position.y = me.refPose[i][2];
+                    child.position.z = me.refPose[i][3];
+
+                    child.rotation.x = me.refPose[i][4];
+                    child.rotation.y = me.refPose[i][5];
+                    child.rotation.z = me.refPose[i][6];
+
+                    child.scale.x = me.refPose[i][7];
+                    child.scale.y = me.refPose[i][8];
+                    child.scale.z = me.refPose[i][9];
+                }
+            });
+        }
+    }
+
     onLoad(onSuccess: () => void, onFailure: () => void)
     {
         let dependencies:any = [];
 
         if (game.gltfLoader)
         {
-            const loadModel = game.gltfLoader?.loadAsync("assets/models/mascot.glb", (event: ProgressEvent) => {});
+            const loadModel = game.gltfLoader?.loadAsync("assets/models/mascot_identity.glb", (event: ProgressEvent) => {});
             const loadIdleAnim = game.gltfLoader?.loadAsync("assets/models/mascot_scratch.glb", (event: ProgressEvent) => {});
             const loadWalkAnim = game.gltfLoader?.loadAsync("assets/models/mascot_walk.glb", (event: ProgressEvent) => {});
 
             dependencies.push(loadModel);
-            dependencies.push(loadIdleAnim)
-
+            dependencies.push(loadIdleAnim);
+            dependencies.push(loadWalkAnim);
             
             loadModel.then((gltf) => { 
                 this.model = gltf.scene;
                 this.identityPose = gltf.animations[0];
+
+                console.log(gltf.animations[0]);
     
                 let me = this;
     
@@ -104,6 +176,13 @@ export class Player extends Actor {
     
                     if (child instanceof THREE.Bone) {
                         me.bones.push(child as THREE.Bone);
+
+                        me.refPose.push([
+                            child.id,
+                            child.position.x, child.position.y, child.position.z,
+                            child.rotation.x, child.rotation.y, child.rotation.z,
+                            child.scale.x, child.scale.y, child.scale.z
+                        ]);
                     }
                 });
     
@@ -127,6 +206,21 @@ export class Player extends Actor {
         Promise.all(dependencies).then(() => {
             // All dependencies have loaded.
             onSuccess();
+
+            if (!this.idleAnim)
+                console.log("Error: could not load idle anim.");
+
+            if (!this.walkAnim)
+            {
+                console.log("Error: could not load walk anim. Trying in a little...");                
+
+                setTimeout(()=>{
+                    if (!this.walkAnim)
+                        console.log("No, yeah, it really didn't load.");
+                    else
+                        console.log("Okay it was a delay issue.");
+                }, 1000);
+            }
         });
     }
 
@@ -237,7 +331,7 @@ export class Player extends Actor {
         game.scene?.add( this.sphere );
 
 
-        if (this.model && this.idleAnim)
+        if (this.model && this.idleAnim && this.walkAnim)
         {
             // Initial antenna spring position
 
@@ -257,16 +351,41 @@ export class Player extends Actor {
 
             //THREE.AnimationUtils.makeClipAdditive(this.idleAnim, 0);
 
+            let animIndex = 0;
+            const setupPlayerAction = (mixer: THREE.AnimationMixer, animation: THREE.AnimationClip, playerAction: PlayerAction) => {
+                
+                console.log(playerAction);
+
+                //playerAction = {} as PlayerAction;
+                playerAction.action = mixer.clipAction(animation).setDuration( 2.5 ).play();
+                playerAction.targetWeight = 0.0;
+                playerAction.id = animIndex++;
+                
+                this.actionArray[playerAction.id] = playerAction;
+
+                
+            };
+
+            
+
+            if (this.idleAnim)
+                setupPlayerAction(this.mixer, this.idleAnim, this.playerActions.idle);
+
+            if (this.walkAnim)
+                setupPlayerAction(this.mixer, this.walkAnim, this.playerActions.walk);    
             
             
             //
 
             if (this.identityPose)
-                this.mixer.clipAction(this.identityPose).setDuration( 2.5 ).play();
+                this.mixer.clipAction(this.identityPose).setDuration( 2.5 ).play().setEffectiveWeight(0.001);    
 
-            this.activeAction = this.mixer.clipAction(this.idleAnim).setDuration( 2.5 ).play();   
-            this.activeAction.setEffectiveWeight(0.001);
+            this.playAction(this.playerActions.idle, 2);
             //this.mixer.addEventListener()
+        }
+        else
+        {
+            console.log("COULD NOT LOAD ANIMS!");
         }
 
         const boneA = this.bones[Bones.antenna_a] as THREE.Bone;
@@ -491,6 +610,8 @@ export class Player extends Actor {
 
     onUpdate(dt: number)
     {   
+        //this.applyRefPose();
+
         // Update before anim post-processing (blinking, lookat, etc...)
         this.mixer?.update(dt);
 
@@ -627,8 +748,23 @@ export class Player extends Actor {
             }
 
             //
-            // Animations
-            // 
+            // Animations - Update the weights
+            //
+
+            for (let i=0; i < this.actionArray.length; i++)
+            {
+                let currentAction = this.actionArray as PlayerAction;
+
+                if (currentAction.action)
+                {
+                    let weightNow = currentAction.action.getEffectiveWeight();
+                    
+                    currentAction.action.setEffectiveWeight(
+                        lerpTo(weightNow, currentAction.targetWeight, dt, this.currentFadeTime)
+                    );
+                }
+            }
+
 
 
             /*if (this.mixer && this.activeAction)
