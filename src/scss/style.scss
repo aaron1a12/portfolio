@@ -20,7 +20,8 @@ body {
     margin:0; 
     padding:0;
 
-    
+    /* Prevent gross bounce scroll */
+    overscroll-behavior: none;
 }
 
 #logo {
