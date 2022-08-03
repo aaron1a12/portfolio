@@ -69,8 +69,6 @@ export class Player extends Actor {
 	    {
 		    let currentAction = this.actionArray[i] as PlayerAction;
 
-            
-
             if (currentAction.id !== action.id)
                 currentAction.targetWeight = 0.0;
             else
@@ -162,7 +160,7 @@ export class Player extends Actor {
                 this.model = gltf.scene;
                 this.identityPose = gltf.animations[0];
 
-                console.log(gltf.animations[0]);
+                //console.log(gltf.animations[0]);
     
                 let me = this;
     
@@ -249,7 +247,6 @@ export class Player extends Actor {
 
     onStart()
     {
-        console.log("I exist.");
         game.scene?.add(this.arrowHelper);
 
         document.addEventListener('keydown', (e) => {
@@ -352,24 +349,28 @@ export class Player extends Actor {
             //THREE.AnimationUtils.makeClipAdditive(this.idleAnim, 0);
 
             let animIndex = 0;
-            const setupPlayerAction = (mixer: THREE.AnimationMixer, animation: THREE.AnimationClip, playerAction: PlayerAction) => {
-                
-                console.log(playerAction);
+            const setupPlayerAction = (mixer: THREE.AnimationMixer,
+                animation: THREE.AnimationClip, playerAction: PlayerAction) => {
 
-                //playerAction = {} as PlayerAction;
-                playerAction.action = mixer.clipAction(animation).setDuration( 2.5 ).play();
+                playerAction.action = mixer.clipAction(animation).setDuration( 1.0 ).play();
                 playerAction.targetWeight = 0.0;
                 playerAction.id = animIndex++;
                 
-                this.actionArray[playerAction.id] = playerAction;
 
+                console.log(playerAction);
+                this.actionArray[playerAction.id] = playerAction;
+                console.log(this.actionArray.length);
                 
             };
 
             
 
             if (this.idleAnim)
+            {
                 setupPlayerAction(this.mixer, this.idleAnim, this.playerActions.idle);
+
+                this.playerActions.idle.action?.setDuration(2.5);
+            }
 
             if (this.walkAnim)
                 setupPlayerAction(this.mixer, this.walkAnim, this.playerActions.walk);    
@@ -615,8 +616,6 @@ export class Player extends Actor {
         // Update before anim post-processing (blinking, lookat, etc...)
         this.mixer?.update(dt);
 
-
-
         /*if (this.mixer && this.idleAnim)
             this.mixer.clipAction(this.idleAnim).setDuration( duration );
 
@@ -646,8 +645,6 @@ export class Player extends Actor {
 
         if (this.model)
         {
-            
-
             this.camTargetAlpha = lerpTo(this.camTargetAlpha,
                 (Math.abs(this.inputVector.lengthSq()) > 0) ? 1:0, dt, 1.0);
 
@@ -712,16 +709,17 @@ export class Player extends Actor {
 
             if (db)
             {
-                const debugV = (v: THREE.Vector3) => {
+                /*const debugV = (v: THREE.Vector3) => {
                     let x = Math.round(v.x * 1000) / 1000;
                     let y = Math.round(v.y * 1000) / 1000;
                     let z = Math.round(v.z * 1000) / 1000;
 
                     return `x: ${x}, y: ${y}, z: ${z}`;
-                };
+                };*/
 
-                db.innerText = debugV(this.desiredInput);
-                //db.innerText = String(this.camTargetAlpha);
+                //db.innerText = debugV(this.desiredInput);
+                db.innerText = `Idle weight: ${this.playerActions.idle.action?.getEffectiveWeight()}
+                 | Walk weight: ${this.playerActions.walk.action?.getEffectiveWeight()}`;
             }
 
             if (game.camera)
@@ -748,17 +746,30 @@ export class Player extends Actor {
             }
 
             //
-            // Animations - Update the weights
+            // Animations
             //
+
+            let speed = this.velocity.length() * 27.2727;  // what is this?
+
+            if (speed > 0.1)
+            {
+                this.playAction(this.playerActions.walk, 10);
+            }
+            else
+            {
+                this.playAction(this.playerActions.idle, 10);
+            }
+
+            // Update the weights
 
             for (let i=0; i < this.actionArray.length; i++)
             {
-                let currentAction = this.actionArray as PlayerAction;
+                let currentAction = this.actionArray[i] as PlayerAction;
 
                 if (currentAction.action)
                 {
                     let weightNow = currentAction.action.getEffectiveWeight();
-                    
+
                     currentAction.action.setEffectiveWeight(
                         lerpTo(weightNow, currentAction.targetWeight, dt, this.currentFadeTime)
                     );
