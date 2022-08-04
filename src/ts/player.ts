@@ -72,7 +72,7 @@ export class Player extends Actor {
             if (currentAction.id !== action.id)
                 currentAction.targetWeight = 0.0;
             else
-                currentAction.targetWeight = 1.0;
+                currentAction.targetWeight = 0.9;
 	    }
 
         this.currentFadeTime = fadeTime;
@@ -123,7 +123,6 @@ export class Player extends Actor {
 
             this.model.traverse(function (child) {
                 if (child.id == currentId) {
-                    console.log("Found it");
                     let model = me.model as THREE.Group;
                     
                     child.position.x = me.refPose[i][1];
@@ -359,7 +358,7 @@ export class Player extends Actor {
 
                 console.log(playerAction);
                 this.actionArray[playerAction.id] = playerAction;
-                console.log(this.actionArray.length);
+                
                 
             };
 
@@ -379,7 +378,10 @@ export class Player extends Actor {
             //
 
             if (this.identityPose)
-                this.mixer.clipAction(this.identityPose).setDuration( 2.5 ).play().setEffectiveWeight(0.001);    
+            {
+                this.mixer.clipAction(this.identityPose).setDuration( 2.5 ).play().setEffectiveWeight(.1);    
+                console.log("Playing identity pose");
+            }
 
             this.playAction(this.playerActions.idle, 2);
             //this.mixer.addEventListener()
@@ -601,31 +603,12 @@ export class Player extends Actor {
         );
     }
 
-    private bIsPlayingWalkingAnim = false;
-
-    private activeAction = null as null | THREE.AnimationAction;
-
-
-
-            
-
     onUpdate(dt: number)
     {   
-        //this.applyRefPose();
+        this.applyRefPose();
 
         // Update before anim post-processing (blinking, lookat, etc...)
         this.mixer?.update(dt);
-
-        /*if (this.mixer && this.idleAnim)
-            this.mixer.clipAction(this.idleAnim).setDuration( duration );
-
-        if (this.bIsPlayingWalkingAnim && this.velocity.length() < 0.01)
-        {
-            this.bIsPlayingWalkingAnim = false;
-            this.mixer.clipAction(this.idleAnim).crossFadeTo(this.idleAnim)
-        }//*/
-        
-        //console.log(duration);
 
         //this.idleBlink(dt);
         this.updateLookAt(dt);
@@ -653,13 +636,8 @@ export class Player extends Actor {
 
             this.velocity.add(gravity.clone().multiplyScalar(dt * this.mass * 0.004));
 
-            let targetFacing = this.getPosition().add(this.velocity);
-            //targetFacing.y = 0;
-
             //this.model.lookAt(targetFacing);
             this.model.rotation.y = this.velocity.x * 30;
-
-            //let force = mass * acceleration;
 
             this.velocity.add(this.inputVector.clone().multiplyScalar(this.mass));
             this.inputVector.set(0,0,0);
