@@ -621,6 +621,8 @@ export class Player extends Actor {
         // Update before anim post-processing (blinking, lookat, etc...)
         this.mixer?.update(dt);
 
+        this.saveRefPose();
+
         //this.idleBlink(dt);
         this.updateLookAt(dt);
         //this.updateSpring(dt);
