@@ -47,6 +47,17 @@ interface PlayerActions {
     walk: PlayerAction;
 }
 
+interface Transform {
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
+    scale: THREE.Vector3;
+}
+
+interface RefPoseBone {
+    bone: THREE.Bone;
+    transform: Transform;
+}
+
 export class Player extends Actor {
     constructor()
     {
@@ -111,33 +122,35 @@ export class Player extends Actor {
     //private actions:any = []
     private actionTargets:any = []
 
+    private saveRefPose()
+    {
+        for (let i=0; i<this.refPose.length; i++)
+        {
+            const item = this.refPose[i] as RefPoseBone;
+
+            item.transform.position = item.bone.position.clone();
+            item.transform.rotation = item.bone.rotation.clone();
+            item.transform.scale = item.bone.scale.clone();
+        }
+    }
+
     private applyRefPose()
     {
-        if (!this.model) return;
-
-        let me = this;
-
-        for (let i=0; i < 10; i++)
+        for (let i=0; i<this.refPose.length; i++)
         {
-            let currentId = this.refPose[i][0] as number;
+            const item = this.refPose[i] as RefPoseBone;
 
-            this.model.traverse(function (child) {
-                if (child.id == currentId) {
-                    let model = me.model as THREE.Group;
-                    
-                    child.position.x = me.refPose[i][1];
-                    child.position.y = me.refPose[i][2];
-                    child.position.z = me.refPose[i][3];
+            item.bone.position.x = item.transform.position.x;
+            item.bone.position.y = item.transform.position.y;
+            item.bone.position.z = item.transform.position.z;
 
-                    child.rotation.x = me.refPose[i][4];
-                    child.rotation.y = me.refPose[i][5];
-                    child.rotation.z = me.refPose[i][6];
+            item.bone.rotation.x = item.transform.rotation.x;
+            item.bone.rotation.y = item.transform.rotation.y;
+            item.bone.rotation.z = item.transform.rotation.z;
 
-                    child.scale.x = me.refPose[i][7];
-                    child.scale.y = me.refPose[i][8];
-                    child.scale.z = me.refPose[i][9];
-                }
-            });
+            item.bone.scale.x = item.transform.scale.x;
+            item.bone.scale.y = item.transform.scale.y;
+            item.bone.scale.z = item.transform.scale.z;
         }
     }
 
@@ -173,15 +186,13 @@ export class Player extends Actor {
     
                     if (child instanceof THREE.Bone) {
                         me.bones.push(child as THREE.Bone);
-
-                        me.refPose.push([
-                            child.id,
-                            child.position.x, child.position.y, child.position.z,
-                            child.rotation.x, child.rotation.y, child.rotation.z,
-                            child.scale.x, child.scale.y, child.scale.z
-                        ]);
+                        me.refPose.push({
+                            bone: child, transform: {}
+                        } as RefPoseBone);
                     }
                 });
+
+                this.saveRefPose();
     
                 this.model.castShadow = true;
                 game.scene?.add(this.model);
