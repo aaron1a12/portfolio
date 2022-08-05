@@ -378,13 +378,13 @@ export class Player extends Actor {
             if (this.idleAnim)
             {
                 setupPlayerAction(this.mixer, this.idleAnim, this.playerActions.idle);
-
+                
                 this.playerActions.idle.action?.setDuration(2.5);
             }
 
             if (this.walkAnim)
                 setupPlayerAction(this.mixer, this.walkAnim, this.playerActions.walk);    
-            
+                
             
             //
 
@@ -623,9 +623,9 @@ export class Player extends Actor {
 
         this.saveRefPose();
 
-        //this.idleBlink(dt);
+        this.idleBlink(dt);
         this.updateLookAt(dt);
-        //this.updateSpring(dt);
+        this.updateSpring(dt);
 
         this.mouseInertia = lerpTo(this.mouseInertia, 0.0, dt, 5);
 
@@ -742,6 +742,13 @@ export class Player extends Actor {
 
             let speed = this.velocity.length() * 27.2727;  // what is this?
 
+            let duration = 1 - Math.abs(this.velocity.x * 30);
+            duration *= 2.0;
+
+            duration = clamp(duration, 0.5, 10);
+
+            this.playerActions.walk.action?.setDuration(duration);
+
             if (speed > 0.1)
             {
                 this.playAction(this.playerActions.walk, 10);
@@ -805,16 +812,6 @@ export class Player extends Actor {
 
         //this.velocity.lerp(this.inputVector, 100.0 * dt);
         this.inputVector.set(0,0,0);
-        
-        
-        //this.model?.position.add(this.velocity);   
-
-        //console.log(this.velocity);
-     
-        /*        let duration = 1 - Math.abs(this.velocity.x * 30);
-            duration *= 2.0;
-
-            duration = clamp(duration, 0.5, 10); */
     }
 
     private transitionTime:number = 0.5;
