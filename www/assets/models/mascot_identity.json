@@ -1,0 +1,11 @@
+{
+	"mascot_identity": {
+		"version": 1,
+		"id": "mascot_identity",
+		"name": "1",
+		"kind": "Puppeteer",
+		"mood": null,
+		"postPlaybackMood": null,
+		"duration": 0.06666666667
+	}
+}
