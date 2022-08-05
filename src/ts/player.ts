@@ -337,7 +337,6 @@ export class Player extends Actor {
         this.sphere = new THREE.Mesh( geometry, material );
         game.scene?.add( this.sphere );
 
-
         if (this.model && this.idleAnim && this.walkAnim)
         {
             // Initial antenna spring position
@@ -354,10 +353,6 @@ export class Player extends Actor {
             this.mixer.stopAllAction();
             this.mixer.uncacheRoot(this.mixer.getRoot());
 
-            //this.mixer.clipAction(this.identityPose as THREE.AnimationClip).play().setEffectiveWeight(0.05);
-
-            //THREE.AnimationUtils.makeClipAdditive(this.idleAnim, 0);
-
             let animIndex = 0;
             const setupPlayerAction = (mixer: THREE.AnimationMixer,
                 animation: THREE.AnimationClip, playerAction: PlayerAction) => {
@@ -373,27 +368,16 @@ export class Player extends Actor {
                 
             };
 
-            
-
             if (this.idleAnim)
             {
                 setupPlayerAction(this.mixer, this.idleAnim, this.playerActions.idle);
-                
+
                 this.playerActions.idle.action?.setDuration(2.5);
             }
 
             if (this.walkAnim)
                 setupPlayerAction(this.mixer, this.walkAnim, this.playerActions.walk);    
                 
-            
-            //
-
-            if (this.identityPose)
-            {
-                this.mixer.clipAction(this.identityPose).setDuration( 2.5 ).play().setEffectiveWeight(.1);    
-                console.log("Playing identity pose");
-            }
-
             this.playAction(this.playerActions.idle, 2);
             //this.mixer.addEventListener()
         }
@@ -614,6 +598,8 @@ export class Player extends Actor {
         );
     }
 
+    private targetYaw:number = 0;
+
     onUpdate(dt: number)
     {   
         this.applyRefPose();
@@ -648,10 +634,6 @@ export class Player extends Actor {
             const gravity = new THREE.Vector3(0, -9.8, 0);
 
             this.velocity.add(gravity.clone().multiplyScalar(dt * this.mass * 0.004));
-
-            //this.model.lookAt(targetFacing);
-            this.model.rotation.y = this.velocity.x * 30;
-
             this.velocity.add(this.inputVector.clone().multiplyScalar(this.mass));
             this.inputVector.set(0,0,0);
 
@@ -677,9 +659,18 @@ export class Player extends Actor {
                 this.velocity.set(newVel.x, newVel.y, newVel.z);
             }
 
-            let target = new THREE.Vector3().addVectors(this.model.position, this.velocity);
+            // Facing
+
+            if (Math.abs(this.velocity.x) > 0.005)
+            {
+                this.targetYaw = (this.velocity.x > 0) ? 1.0 : -1.0;
+            }
+
+            this.model.rotation.y = lerpTo(this.model.rotation.y, this.targetYaw, dt, 10);
 
             // Camera
+
+            let target = new THREE.Vector3().addVectors(this.model.position, this.velocity);
 
             let camFollowPlayer = lerpTo(this.camPos, this.model.position.x, dt, 12.1);
             let camFollowTarget = lerpTo(this.camPos, target.x, dt, 1.0);
