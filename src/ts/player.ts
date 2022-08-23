@@ -725,6 +725,23 @@ export class Player extends Actor {
                     let paneWidth = homePane.offsetWidth * 0.5;
                     homePane.style.left = pos.x - paneWidth + "px";
                 }
+
+
+                const articles = document.getElementsByTagName("article");
+
+                for (var i = 0; i < articles.length; i++) {
+
+                    const element:HTMLElement = articles[i];
+
+                    let attr = element.getAttribute("data-position");
+
+                    if (attr)
+                    {
+                        const parts = attr.split(" ");
+                        const position = {x:Number(parts[0]), y: Number(parts[1])};
+                    }
+                    
+                }
             }
 
             //
