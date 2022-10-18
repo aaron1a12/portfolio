@@ -1,5 +1,5 @@
 # portfolio
-Source for my portfolio hosted at aaronescobar.com
+Source for my portfolio hosted at aaronescobar.com (WIP)
 
 # License
 Source code is provided under the MIT license.
